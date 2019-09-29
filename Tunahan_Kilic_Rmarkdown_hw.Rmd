@@ -1,0 +1,44 @@
+---
+title: "Assignment 1: R Markdown"
+author: "Tunahan Kılıç"
+date: 29.09.2019
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+I have been working in the IT audit for 3 years, including the last 1.5 years at Wirecard Ödeme ve Elektronik Para Hizmetleri A.Ş. However, recently I decided to become a data scientist with the desire to advance my career in a completely different direction. In particular, the data analysis process, which has recently started to play an important role in the decision-making of companies, benefits many companies in setting forward-looking strategies.Since data science has a wide range of fields of study and there is no end to the field of use, my desire to work and make a difference in this field is very high.
+
+
+## useR! 2019 Toulouse
+
+Rob Hyndman is an Australian statistician, working on forecasting and time series, and is also a lecturer at Monash University in Australia. Rob, along with his team of Mitchell O'hara-Wild and Earo Wang have created packages called tidyverts that enable them to perform effective analyses on time series.In this package series there are 3 packages with the names tsibble, fable and feasts. Respectively, tsibble for temporal data frames and tools, fable for tidy forecasting, and feasts packages for features extraction and statistics are used.During the conference, Hyndman worked on the scenario of identifying tourism trends and making inferences by regions of Australia in order to demonstrate the inferences that can be made with the help of these packages.
+
+Click the link below for more detailed information and the full presentation.
+
+[useR! 2019 Toulouse - Talk Time Series Data - Rob Hyndman](https://www.youtube.com/watch?v=Ykiuj16P450)
+
+## Predict Customer Churn with R
+
+The article written by Susan Li is about predicting customer churn with R. Customer churn occurs when customers or subscribers stop doing business with a company or service, also known as customer attrition. It is also referred as loss of clients or customers.Susan Li predicted customer churn using telecom dataset which was downloaded from IBM Sample Data Sets. In this analysis process, Logistic Regression, Decision Tree, and Random Forest were used.The results of the analysis showed that Logistic Regression, Decision Tree and Random Forest can be used for customer churn analysis for this particular dataset equally fine.
+
+Click on the link below to see details of the analysis and code examples.
+
+[Predict Customer Churn with R](https://towardsdatascience.com/predict-customer-churn-with-r-9e62357d47b4)
+
+## Airbnb Rental Listings Dataset Mining
+
+The article is about an exploratory data analysis of Airbnb's Data to understand the rental landscape in New York City. An exploratory analysis of the Airbnb dataset sourced from the Inside Airbnb website was performed to understand the rental landscape in NYC through various static and interactive visualisations. He stated in the article that he was not able to obtain the data on the number of booking made on Airbnb over the years. Instead, he has used ‘number of reviews’ as a proxy for the demand for Airbnb rentals. A detailed text cleaning was carried out on the text data to make sense of the results. Analysis in writing highlights a few trends from data to give an overview of Airbnb’s market.
+
+Click on the link below to see details of the analysis, data visualisations and code examples.
+
+[Airbnb Rental Listings Dataset Mining](https://towardsdatascience.com/airbnb-rental-listings-dataset-mining-f972ed08ddec)
+
+## Modelling Customer Churn When Churns Are Not Explicitly Observed, with R
+
+The article is about characterization of customer churn. Customer churn can be characterized as either contractual or non-contractual. It can also be characterized as voluntary or non-voluntary depending on the cancellation mechanism.In general, customer churn is a classification problem. However, at non-contractual business including Amazon (non-prime member), every purchase could be that customer’s last, or one of a long sequence of purchases. Thus, churn modelling in non-contractual business is not a classification problem, it is an anomaly detection problem. In order to determine when customers are churning or likely to churn, it is needed when they are displaying anomalously large between purchase times. Online retail data set from UCI Machine Learning repository was used in analysis process.
+
+Click on the link below to see details of the analysis, data visualisations and code examples.
+
+[Modelling Customer Churn When Churns Are Not Explicitly Observed, with R](https://towardsdatascience.com/modelling-customer-churn-when-churns-are-not-explicitly-observed-with-r-a768a1c919d5)

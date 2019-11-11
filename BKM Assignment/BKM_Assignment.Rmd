@@ -1,0 +1,117 @@
+---
+title: "BKM Assignment"
+author: "Tunahan Kılıç"
+date: "11 Kasım 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# 1.BKM Dataset
+
+BKM data includes the numerical values for transactions made from credit card and debit card, including the number of transactions and transaction amount according to sectoral groups. The analysis was conducted using data from the beginning of 2017 to the period of June 2019.
+
+
+## 2.Preparing and Cleaning Dataset
+
+### 2.1. Preparing Dataset
+
+Loading required libraries for analysis
+```{r pressure, warning=FALSE, message=FALSE}
+library(rvest)
+library(tidyverse)
+library(lubridate)
+library(ggplot2)
+```
+
+
+```{r get_df, warning=FALSE, message=FALSE}
+getYearMonth<- function(year,month) {
+  url <- paste('https://bkm.com.tr/secilen-aya-ait-sektorel-gelisim/?filter_year=',year,'&filter_month=',month,'&List=Listele', sep='',collapse = NULL)
+  return(url)
+}
+
+bkm_year <-c('2017','2018','2019')
+bkm_month <- c('01','02','03','04','05','06','07','08','09','10','11','12')
+bkm_full <- ""
+
+for (i in 1:length(bkm_year)) {
+  for (j in 1:length(bkm_month)) {
+    if (bkm_year[i] == "2019" & bkm_month[j] == "07") {break}
+    url<-getYearMonth(bkm_year[i],bkm_month[j])
+    pages <- read_html(url)
+    df <- pages %>% html_nodes("table") %>% .[(4)] %>% html_table(pages, fill = TRUE, header = FALSE)  %>%  as.data.frame() %>% slice(3:max(nrow(.)))  
+    df <- df %>% mutate_if(is.numeric,funs(ifelse(is.na(.),0,.))) %>%  mutate(yearMonth = paste(bkm_year[i],bkm_month[j],sep='-'))
+    bkm_full <- rbind(bkm_full, df)
+  }
+}
+
+colnames(bkm_full) <- c("isyeri_grubu", "kk_islem_adedi", "bk_islem_adedi", "kk_islem_tutari", "bk_islem_tutari", "yil_ay")
+```
+
+### 2.2. Cleaning Dataset
+```{r clean_df, warning=FALSE, message=FALSE}
+options(scipen = 999)
+
+#Removing "TOPLAM" rows that belongs to each month
+bkm_full <- bkm_full %>% filter(!str_detect(isyeri_grubu,"TOPLAM"))
+
+#Converting char yil_ay column to date format
+bkm_full$yil_ay <- lubridate::ymd(bkm_full$yil_ay, truncated = 1L)
+bkm_full = bkm_full[-1,]
+
+
+head(bkm_full)
+
+str(bkm_full)
+```
+
+```{r change_to_num, warning=FALSE, message=FALSE}
+#Creating year column in a df
+bkm_full$yil <- year(ymd(bkm_full$yil_ay))
+
+
+#Changing chars to numeric value
+bkm_full$kk_islem_adedi <- as.numeric(str_replace_all(bkm_full$kk_islem_adedi, pattern=fixed("."), ""))
+bkm_full$bk_islem_adedi<-as.numeric(str_replace_all(bkm_full$bk_islem_adedi, pattern=fixed("."), ""))
+
+#Replacing thousand separator with " " and decimal separator "," with "."
+bkm_full$kk_islem_tutari<-str_replace_all(bkm_full$kk_islem_tutari, pattern=fixed("."), "")
+bkm_full$kk_islem_tutari<-as.numeric(str_replace_all(bkm_full$kk_islem_tutari, pattern=fixed(","), "."))
+
+bkm_full$bk_islem_tutari<-str_replace_all(bkm_full$bk_islem_tutari, pattern=fixed("."), "")
+bkm_full$bk_islem_tutari<-as.numeric(str_replace_all(bkm_full$bk_islem_tutari, pattern=fixed(","), "."))
+
+head(bkm_full)
+```
+
+## 3.Exploratory Data Analysis for BKM Dataset
+
+### 3.1.Top 3 Monthly Card Transaction Amounts in Total
+```{r toplam_islem, warning=FALSE, message=FALSE}
+top_sales_bkm <- bkm_full %>% group_by(yil_ay, isyeri_grubu) %>% summarise(islem_tutari = sum(kk_islem_tutari) + sum(bk_islem_tutari)) %>% top_n(3)
+top_sales_bkm
+ggplot(top_sales_bkm, aes(x = ordered(yil_ay), y = islem_tutari, fill = isyeri_grubu)) + geom_bar(stat = "identity") + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) + 
+  labs(x = "Aylık Dönemler", y = "Toplam İşlem Tutarı (KK+BK)", fill = "Isyeri Grubu")
+```
+
+### 3.2.Top 5 Debit Card Transactions Ratio in Total Card Transactions
+```{r debit_ratio, warning=FALSE, message=FALSE}
+
+bkm_debit_ratio <- bkm_full %>% group_by(yil, isyeri_grubu) %>% summarise(toplam_islem_bk = sum(bk_islem_adedi), toplam_kart_islem = sum(bk_islem_adedi) + sum(kk_islem_adedi), ratio_bk = toplam_islem_bk/toplam_kart_islem) %>% top_n(5) %>% arrange(desc(ratio_bk))
+bkm_debit_ratio
+
+#Required libraries for animated plots
+library(gganimate)
+library(gifski)
+library(png)
+theme_set(theme_bw())
+
+p <- ggplot(bkm_debit_ratio, aes(x = yil, y = ratio_bk, group = isyeri_grubu, color = isyeri_grubu)) + geom_line() +
+  scale_x_continuous(breaks = 0:2100) +
+  labs(x = "Yıl", y = "Banka Kartı Kullanım Oranı", color = "Isyeri Grubu") +
+  theme(legend.position = "right")
+p + geom_point(aes(group = seq_along(yil))) + transition_reveal(yil) #Animated debit card ratio plot
+```

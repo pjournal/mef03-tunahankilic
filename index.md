@@ -4,3 +4,4 @@
   [Assignment 1: RMarkdown](Tunahan_Kilic_Rmarkdown_hw.html)
 
 ### Week 4
+  [Assignment 2: BKM Assignment](BKM_Assignment.html)

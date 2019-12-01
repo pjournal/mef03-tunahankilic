@@ -1,0 +1,104 @@
+---
+title: "ATP Tennis Dataset Analysis"
+author: "Tunahan Kılıç"
+date: "December 1st, 2019"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Library Import
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+```
+
+## Exploring Data Frames 
+```{r message=FALSE, warning=FALSE}
+atp_data <- load("atp_tennis_data_2017.RData")
+
+str(tourney_df)
+str(player_df)
+str(rank_df)
+str(score_df)
+str(stats_df)
+```
+
+## 1. Rank Countries (Flag Codes) by the Singles Champions
+```{r}
+
+champs_flags <- tourney_df %>% left_join(player_df, by = c("singles_winner_player_id" = "player_id")) %>% group_by(flag_code) %>% count(flag_code, sort = TRUE)
+
+champs_flags
+```
+
+
+## 2. Rank countries which did not get any singles champs by the games won when they win the match
+```{r}
+player_df %>% select(player_id, flag_code) %>% anti_join(.,champs_flags) %>% 
+  left_join(score_df, by = c("player_id" = "winner_player_id")) %>% 
+  group_by(flag_code) %>% summarise(total_wins = sum(winner_games_won, na.rm = TRUE)) %>% arrange(desc(total_wins))
+```
+
+
+## 3. Rank Countries (Flag Codes) by the Double Champs
+```{r}
+double_winners <- tourney_df %>% 
+  left_join(player_df, by = c("doubles_winner_1_player_id" = "player_id", "doubles_winner_2_player_id" = "player_id")) %>%
+  select(tourney_name, flag_code, doubles_winner_1_player_id, doubles_winner_2_player_id)
+
+double_winners
+```
+
+### 3.1. Checking All Double Pairs are from the same countries
+```{r}
+double_winners %>% gather("Winner_Player_IDs", "IDs", doubles_winner_1_player_id:doubles_winner_2_player_id)
+
+double_winners %>% group_by(flag_code) %>% count(flag_code, sort = TRUE)
+```
+
+
+
+## 4. Total Aces by Each Player in 2017
+```{r}
+score_df$tourney_id <- as.numeric(score_df$tourney_id)
+stats_df$tourney_id <- as.numeric(stats_df$tourney_id)
+```
+
+### 4.1. Total Aces of Winners
+```{r}
+winner_aces_total <- stats_df %>% 
+  left_join(player_df, by = c("winner_player_id" = "player_id")) %>%
+  select(winner_player_id, first_name, last_name, winner_aces) %>%
+  mutate(full_name = paste(first_name, last_name)) %>%
+  group_by(full_name) %>%
+  summarise(winner_total_aces = sum(winner_aces)) %>% select(full_name, winner_total_aces) %>% arrange(desc(winner_total_aces))
+
+winner_aces_total
+```
+
+### 4.2. Total Aces of Losers
+```{r}
+loser_aces_total <- stats_df %>% 
+  left_join(player_df, by = c("loser_player_id" = "player_id")) %>%
+  select(loser_player_id, first_name, last_name, loser_aces) %>%
+  mutate(full_name = paste(first_name, last_name)) %>%
+  group_by(full_name) %>%
+  summarise(loser_total_aces = sum(loser_aces)) %>% select(full_name, loser_total_aces) %>% arrange(desc(loser_total_aces))
+
+loser_aces_total
+```
+
+### 4.3. Total Number of Aces by Players
+```{r}
+total_aces_full <- winner_aces_total %>% left_join(loser_aces_total, by = "full_name") %>% mutate(aces_total = winner_total_aces + loser_total_aces) %>% arrange(desc(aces_total))
+
+#Removing the row that is shown with full name "NA NA"
+total_aces_full <- subset(total_aces_full, full_name != "NA NA")
+
+head(total_aces_full, 10)
+```
